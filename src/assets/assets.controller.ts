@@ -9,14 +9,23 @@ import {
   Post,
 } from '@nestjs/common';
 import { AssetsService } from './assets.service';
-import { ApiTags } from '@nestjs/swagger';
-import { CreateAssetDto, UpdateAssetDto } from './dto/assets.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  AssetResponseDto,
+  AssetWithTicketsDto,
+  CreateAssetDto,
+  GetAssetDto,
+  GroupedAssetDto,
+  UpdateAssetDto,
+} from './dto/assets.dto';
 
 @ApiTags('assets')
 @Controller('assets')
 export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
+  @ApiResponse({ type: [GetAssetDto] })
+  @ApiOperation({ summary: 'Get all assets' })
   @Get()
   findAllAssets() {
     try {
@@ -26,6 +35,8 @@ export class AssetsController {
     }
   }
 
+  @ApiResponse({ type: GroupedAssetDto })
+  @ApiOperation({ summary: 'Get all assets grouped by status' })
   @Get('/status')
   async findAssetsByStatus() {
     try {
@@ -36,14 +47,32 @@ export class AssetsController {
     }
   }
 
-  @Get(':id')
-  findAssetById(@Param('id', ParseIntPipe) id: number) {
+  @ApiResponse({ type: GetAssetDto })
+  @ApiOperation({ summary: 'Get a single asset by id' })
+  @Get(':assetId')
+  findAssetById(@Param('assetId', ParseIntPipe) assetId: number) {
     try {
-      return this.assetsService.findAssetById(id);
+      return this.assetsService.findAssetById(assetId);
     } catch (error) {
       console.log(error);
     }
   }
+
+  @ApiResponse({ type: AssetWithTicketsDto })
+  @ApiOperation({ summary: 'Get a single asset by id and its open tickets' })
+  @Get(':assetId/active_tickets')
+  findAssetByIdWithOpenTickets(
+    @Param('assetId', ParseIntPipe) assetId: number,
+  ) {
+    try {
+      return this.assetsService.findAssetByIdWithOpenTickets(assetId);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @ApiResponse({ type: AssetResponseDto })
+  @ApiOperation({ summary: 'Create a new asset' })
   @Post('/create')
   createAsset(@Body() data: CreateAssetDto) {
     try {
@@ -53,22 +82,26 @@ export class AssetsController {
     }
   }
 
-  @Patch('/update/:id')
+  @ApiResponse({ type: AssetResponseDto })
+  @ApiOperation({ summary: 'Update an existing asset' })
+  @Patch('/update/:assetId')
   updateAsset(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('assetId', ParseIntPipe) assetId: number,
     @Body() data: UpdateAssetDto,
   ) {
     try {
-      return this.assetsService.updateAsset(id, data);
+      return this.assetsService.updateAsset(assetId, data);
     } catch (error) {
       console.log(error);
     }
   }
 
-  @Delete('/delete/:id')
-  deleteAsset(@Param('id', ParseIntPipe) id: number) {
+  @ApiResponse({ type: AssetResponseDto })
+  @ApiOperation({ summary: 'Delete an existing asset' })
+  @Delete('/delete/:assetId')
+  deleteAsset(@Param('assetId', ParseIntPipe) assetId: number) {
     try {
-      return this.assetsService.deleteAsset(id);
+      return this.assetsService.deleteAsset(assetId);
     } catch (error) {
       console.log(error);
     }
